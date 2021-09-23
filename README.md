@@ -18,3 +18,13 @@ The following variables can be configured
 | MQTT_TOPIC  | The topic prefix           | `dsmr`                   |
 | MQTT_QOS    | The MQTT QOS               | `0`                      |
 | SERIAL_PORT | The port to listen to      | `/dev/ttyUSB1`           |
+
+# Docker builds
+
+To build for all platforms, use
+
+```
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
+    --push \
+    -t alexnederlof/dsmr2mqtt .
+```

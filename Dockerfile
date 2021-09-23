@@ -1,5 +1,5 @@
 # We use the latest Rust stable release as base image
-FROM rustlang/rust:nightly-slim AS builder
+FROM --platform=$BUILDPLATFORM  rust:1.55 AS dep-fetcher
 # Let's switch our working directory to `app` (equivalent to `cd app`)
 # The `app` folder will be created for us by Docker in case it does not
 # exist already.
@@ -8,12 +8,22 @@ WORKDIR /app
 # Run deps first. If nothing changes, this step will be cached by docker
 COPY Cargo.* .
 RUN cargo fetch
+RUN mkdir -p /app/.cargo \
+    && cargo vendor > /app/.cargo/config
+
+FROM rust:1.55 AS builder
+# Let's switch our working directory to `app` (equivalent to `cd app`)
+# The `app` folder will be created for us by Docker in case it does not
+# exist already.
+WORKDIR /app
 
 # Copy all files from our working environment to our Docker image
 COPY . .
+COPY --from=dep-fetcher /app/.cargo /app/.cargo
+COPY --from=dep-fetcher /app/vendor /app/vendor
 # Let's build our binary!
 # We'll use the release profile to make it faaaast
-RUN cargo build --release
+RUN cargo build --release --offline
 
 FROM debian:buster-slim AS runtime
 WORKDIR /app
