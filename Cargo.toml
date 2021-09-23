@@ -15,3 +15,8 @@ rumqttc = "0.5"
 
 [profile.release]
 lto = true
+
+
+[[bin]]
+path = "src/main.rs"
+name = "dsmr"
