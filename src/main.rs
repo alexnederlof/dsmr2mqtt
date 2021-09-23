@@ -3,20 +3,21 @@
 #![feature(backtrace)]
 
 mod error;
-mod report;
 mod mqtt;
+mod report;
 use error::MyError;
 use report::*;
 
 use rumqttc::{AsyncClient, MqttOptions, Transport};
 use serial::core::SerialDevice;
-use tokio::{io, select, task::JoinHandle};
 use std::{env, io::Read, time::Duration};
+use tokio::{io, select, task::JoinHandle};
 
 struct Config {
     pub mqtt_host: String,
     pub mqtt_topic_prefix: String,
     pub mqtt_qos: i32,
+    pub serial_port: String,
 }
 
 impl Config {
@@ -28,6 +29,7 @@ impl Config {
             mqtt_qos: env::var("MQTT_QOS")
                 .and_then(|v| v.parse().map_err(|_| env::VarError::NotPresent))
                 .unwrap_or(defaults.mqtt_qos),
+            serial_port: env::var("SERIAL_PORT").unwrap_or(defaults.serial_port),
         }
     }
 }
@@ -38,6 +40,7 @@ impl Default for Config {
             mqtt_host: "tcp://10.10.10.13:1883".to_owned(),
             mqtt_topic_prefix: "dsmr".to_owned(),
             mqtt_qos: 0,
+            serial_port: "/dev/ttyUSB1".to_owned(),
         }
     }
 }
@@ -46,10 +49,10 @@ impl Default for Config {
 async fn main() -> ! {
     let cfg = Config::from_env();
 
-    let mut mqttoptions = MqttOptions::new("dsmr-reader", "10.10.10.13", 1883);
+    let mut mqttoptions = MqttOptions::new("dsmr-reader", &cfg.mqtt_host, 1883);
     mqttoptions.set_keep_alive(30);
     mqttoptions.set_transport(Transport::Tcp);
-    
+
     loop {
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 12);
 
@@ -80,7 +83,7 @@ async fn main() -> ! {
 
 async fn run(cfg: &Config, mut client: &mut AsyncClient) -> Result<!, MyError> {
     // Open Serial
-    let mut port = serial::open("/dev/ttyUSB1")?;
+    let mut port = serial::open(cfg.serial_port.as_str())?;
     port.set_timeout(Duration::from_secs(1))?;
     let reader = dsmr5::Reader::new(port.bytes().map_while(Result::ok));
 
