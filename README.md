@@ -6,11 +6,11 @@ and publishes some of the stats out to an mqtt broker.
 ## DSMRv5 Parser
 
 For parsing the data telegrams I use a modified version of the `dsmr5` crate,
-you can view its source [here](https://github.com/NULLx76/dsmr5)
+you can view its source [here](https://github.com/NULLx76/dsmr5).
 
 # Config
 
-The following variables can be configured
+The following environment variables can be configured:
 
 | name        | meaning                                      | default        |
 | ----------- | -------------------------------------------- | -------------- |
@@ -23,8 +23,6 @@ The following variables can be configured
 
 To build for all platforms, use
 
-```
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
-    --push \
-    -t alexnederlof/dsmr2mqtt .
+```sh
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t dsmr2mqtt .
 ```

@@ -95,35 +95,35 @@ impl<'a> FromIterator<OBIS<'a>> for Measurements {
             match object {
                 OBIS::TariffIndicator(value) => {
                     if let Some(m) = Measurement::parse_tariff(&value) {
-                        res.push(m)
+                        res.push(m);
                     }
                 }
                 OBIS::MeterReadingTo(Tariff::Tariff1, value) => {
-                    res.push(Measurement::ElectricityUsedT1(f64::from(&value)))
+                    res.push(Measurement::ElectricityUsedT1(f64::from(&value)));
                 }
                 OBIS::MeterReadingTo(Tariff::Tariff2, value) => {
-                    res.push(Measurement::ElectricityUsedT2(f64::from(&value)))
+                    res.push(Measurement::ElectricityUsedT2(f64::from(&value)));
                 }
                 OBIS::MeterReadingBy(Tariff::Tariff1, value) => {
-                    res.push(Measurement::ElectricityDeliveredT1(f64::from(&value)))
+                    res.push(Measurement::ElectricityDeliveredT1(f64::from(&value)));
                 }
                 OBIS::MeterReadingBy(Tariff::Tariff2, value) => {
-                    res.push(Measurement::ElectricityDeliveredT2(f64::from(&value)))
+                    res.push(Measurement::ElectricityDeliveredT2(f64::from(&value)));
                 }
                 OBIS::PowerDelivered(value) => {
                     let f = f64::from(&value);
                     draw += f;
-                    res.push(Measurement::CurrentElectricityUsage(f))
+                    res.push(Measurement::CurrentElectricityUsage(f));
                 }
                 OBIS::PowerReceived(value) => {
                     let f = f64::from(&value);
                     draw -= f;
-                    res.push(Measurement::CurrentElectricityDelivery(f))
+                    res.push(Measurement::CurrentElectricityDelivery(f));
                 }
                 OBIS::InstantaneousActivePowerPlus(_, value) => pos += f64::from(&value),
                 OBIS::InstantaneousActivePowerNeg(_, value) => neg += f64::from(&value),
                 OBIS::GasMeterReading(_, value) => {
-                    res.push(Measurement::HourlyGasMeterReading(f64::from(&value)))
+                    res.push(Measurement::HourlyGasMeterReading(f64::from(&value)));
                 }
                 _ => {}
             }

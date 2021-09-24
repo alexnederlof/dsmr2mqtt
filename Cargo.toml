@@ -1,6 +1,6 @@
 [package]
 name = "dsmr"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Victor Roest <victor@xirion.net>"]
 edition = "2018"
 
@@ -15,7 +15,6 @@ rumqttc = "0.5"
 
 [profile.release]
 lto = true
-
 
 [[bin]]
 path = "src/main.rs"

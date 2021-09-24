@@ -2,7 +2,7 @@ mod error;
 mod mqtt;
 mod report;
 use error::MyError;
-use report::*;
+use report::Measurements;
 
 use rumqttc::{AsyncClient, MqttOptions, Transport};
 use serial::SerialPort;
@@ -27,9 +27,14 @@ impl Config {
                 .and_then(|v| v.parse().map_err(|_| env::VarError::NotPresent))
                 .unwrap_or(defaults.mqtt_qos),
             serial_port: env::var("SERIAL_PORT").unwrap_or(defaults.serial_port),
-            credentials: 
-                env::var("MQTT_USERNAME").ok().filter(|s| !s.trim().is_empty())
-                .zip(env::var("MQTT_PASSWORD").ok().filter(|s| !s.trim().is_empty()))
+            credentials: env::var("MQTT_USERNAME")
+                .ok()
+                .filter(|s| !s.trim().is_empty())
+                .zip(
+                    env::var("MQTT_PASSWORD")
+                        .ok()
+                        .filter(|s| !s.trim().is_empty()),
+                ),
         }
     }
 }
@@ -56,7 +61,7 @@ async fn main() -> ! {
     if let Some((user, pass)) = &cfg.credentials {
         mqttoptions.set_credentials(user, pass);
     }
-    
+
     loop {
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 12);
 
@@ -77,7 +82,7 @@ async fn main() -> ! {
 
         // Cleanup before reseting
         if let Err(e) = client.disconnect().await {
-            eprintln!("Error disconnecting: {}", e)
+            eprintln!("Error disconnecting: {}", e);
         }
 
         // Wait a bit before retrying.
@@ -87,7 +92,7 @@ async fn main() -> ! {
 
 async fn run(cfg: &Config, mut client: &mut AsyncClient) -> Result<(), MyError> {
     // Open Serial
-    let mut port = serial::open("/dev/ttyUSB0")?;
+    let mut port = serial::open(&cfg.serial_port)?;
     let settings = serial::PortSettings {
         baud_rate: serial::BaudRate::Baud115200,
         char_size: serial::CharSize::Bits8,
@@ -97,7 +102,7 @@ async fn run(cfg: &Config, mut client: &mut AsyncClient) -> Result<(), MyError> 
     };
     port.configure(&settings)?;
     port.set_timeout(Duration::from_secs(10))?;
-    let reader = dsmr5::Reader::new(port.bytes().take_while(|x| x.is_ok()).map(|x| x.unwrap()));
+    let reader = dsmr5::Reader::new(port.bytes().take_while(Result::is_ok).map(Result::unwrap));
 
     for readout in reader {
         let telegram = readout.to_telegram().map_err(MyError::Dsmr5Error)?;
