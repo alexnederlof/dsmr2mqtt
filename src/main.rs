@@ -14,6 +14,7 @@ struct Config {
     pub mqtt_topic_prefix: String,
     pub mqtt_qos: i32,
     pub serial_port: String,
+    pub credentials: Option<(String, String)>,
 }
 
 impl Config {
@@ -26,6 +27,9 @@ impl Config {
                 .and_then(|v| v.parse().map_err(|_| env::VarError::NotPresent))
                 .unwrap_or(defaults.mqtt_qos),
             serial_port: env::var("SERIAL_PORT").unwrap_or(defaults.serial_port),
+            credentials: 
+                env::var("MQTT_USERNAME").ok().filter(|s| !s.trim().is_empty())
+                .zip(env::var("MQTT_PASSWORD").ok().filter(|s| !s.trim().is_empty()))
         }
     }
 }
@@ -37,6 +41,7 @@ impl Default for Config {
             mqtt_topic_prefix: "dsmr".to_owned(),
             mqtt_qos: 0,
             serial_port: "/dev/ttyUSB1".to_owned(),
+            credentials: None,
         }
     }
 }
@@ -48,7 +53,10 @@ async fn main() -> ! {
     let mut mqttoptions = MqttOptions::new("dsmr-reader", &cfg.mqtt_host, 1883);
     mqttoptions.set_keep_alive(30);
     mqttoptions.set_transport(Transport::Tcp);
-
+    if let Some((user, pass)) = &cfg.credentials {
+        mqttoptions.set_credentials(user, pass);
+    }
+    
     loop {
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 12);
 
