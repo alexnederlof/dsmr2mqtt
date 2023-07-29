@@ -56,7 +56,7 @@ async fn main() -> ! {
     let cfg = Config::from_env();
 
     let mut mqttoptions = MqttOptions::new("dsmr-reader", &cfg.mqtt_host, 1883);
-    mqttoptions.set_keep_alive(30);
+    mqttoptions.set_keep_alive(Duration::from_secs(30));
     mqttoptions.set_transport(Transport::Tcp);
     if let Some((user, pass)) = &cfg.credentials {
         mqttoptions.set_credentials(user, pass);
@@ -67,7 +67,9 @@ async fn main() -> ! {
 
         let eventloop: JoinHandle<_> = tokio::spawn(async move {
             loop {
-                let _event = eventloop.poll().await.unwrap();
+                if let Err(e) = eventloop.poll().await {
+                    eprintln!("Eventloop error: {}", e);
+                }
             }
         });
 
