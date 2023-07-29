@@ -69,6 +69,8 @@ async fn main() -> ! {
             loop {
                 if let Err(e) = eventloop.poll().await {
                     eprintln!("Eventloop error: {}", e);
+                    // Wait a bit before retrying.
+                    tokio::time::sleep(Duration::from_secs(5)).await;
                 }
             }
         });
