@@ -24,5 +24,5 @@ The following environment variables can be configured:
 To build for all platforms, use
 
 ```sh
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t dsmr2mqtt .
+docker buildx build --platform linux/amd64,linux/arm64 -t dsmr2mqtt .
 ```

@@ -11,7 +11,7 @@ dsmr5 = { git = "https://github.com/NULLx76/dsmr5" }
 serial = "0.4.0"
 thiserror = "1.0"
 tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
-rumqttc = "0.22"
+rumqttc = { version = "0.22", features = ["use-rustls"] }
 
 [profile.release]
 lto = true

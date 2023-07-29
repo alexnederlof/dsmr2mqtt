@@ -1,5 +1,5 @@
 # Prepare cargo chef
-FROM --platform=$BUILDPLATFORM rust:1.71 AS chef
+FROM --platform=$BUILDPLATFORM rust:1.71-bullseye AS chef
 RUN cargo install cargo-chef 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY . .
 RUN cargo build --release --offline
 
 # Runtime
-FROM debian:buster-slim AS runtime
+FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 
 COPY --from=builder /app/target/release/dsmr dsmr
