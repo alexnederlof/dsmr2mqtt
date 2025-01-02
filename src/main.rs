@@ -63,8 +63,9 @@ async fn main() -> ! {
     }
 
     loop {
+        println!("Connecting to MQTT");
         let (mut client, mut eventloop) = AsyncClient::new(mqttoptions.clone(), 12);
-
+        println!("Connected to MQTT");
         let eventloop: JoinHandle<_> = tokio::spawn(async move {
             loop {
                 if let Err(e) = eventloop.poll().await {
@@ -83,7 +84,7 @@ async fn main() -> ! {
                 eprintln!("Encountered error running: {}", run.unwrap_err());
             }
         }
-
+        println!("Disconnecting from MQTT");
         // Cleanup before reseting
         if let Err(e) = client.disconnect().await {
             eprintln!("Error disconnecting: {}", e);
