@@ -17,7 +17,7 @@ COPY . .
 RUN cargo build --release --offline
 
 # Runtime
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
 COPY --from=builder /app/target/release/dsmr dsmr
